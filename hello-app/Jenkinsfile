@@ -1,7 +1,23 @@
-stage('Build') {
-    steps {
-        dir('hello-app') {
-            sh 'mvn clean package'
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Build') {
+            steps {
+                dir('hello-app') {
+                    sh 'mvn clean package'
+                }
+            }
         }
+
+        stage('Test') {
+            steps {
+                dir('hello-app') {
+                    sh 'mvn test'
+                }
+            }
+        }
+
     }
 }
