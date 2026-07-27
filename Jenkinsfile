@@ -4,13 +4,15 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/snehashingade716-droid/devops-project.git'
+                checkout scm
             }
         }
 
         stage('Build') {
             steps {
-                sh 'mvn clean package'
+                dir('hello-app') {
+                    sh 'mvn clean package'
+                }
             }
         }
     }
