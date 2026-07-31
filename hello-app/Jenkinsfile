@@ -19,5 +19,12 @@ pipeline {
             }
         }
 
+        stage('Deploy') {
+            steps {
+                dir('hello-app') {
+                    sh 'java -cp target/hello-app-1.0-SNAPSHOT.jar com.devops.App'
+                }
+            }
+        }
     }
 }
