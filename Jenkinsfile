@@ -41,7 +41,23 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-                sh 'docker push ${DOCKER_IMAGE}:${DOCKER_TAG}'
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASSWORD" | docker login \
+                            --username "$DOCKER_USERNAME" \
+                            --password-stdin
+
+                        docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+
+                        docker logout
+                    '''
+                }
             }
         }
 
@@ -56,18 +72,27 @@ pipeline {
             steps {
                 sh 'kubectl rollout status deployment/hello-app'
                 sh 'kubectl get pods'
+                sh 'kubectl get deployment hello-app'
                 sh 'kubectl get service hello-app-service'
             }
         }
     }
 
     post {
+
         success {
-            echo 'CI/CD Pipeline completed successfully!'
+            echo '=========================================='
+            echo 'CI/CD PIPELINE COMPLETED SUCCESSFULLY!'
+            echo 'Docker image pushed successfully.'
+            echo 'Kubernetes deployment completed.'
+            echo '=========================================='
         }
 
         failure {
-            echo 'CI/CD Pipeline failed. Check the Jenkins console output.'
+            echo '=========================================='
+            echo 'CI/CD PIPELINE FAILED'
+            echo 'Check the Jenkins Console Output.'
+            echo '=========================================='
         }
     }
 }
