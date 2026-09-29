@@ -5,6 +5,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'sneha18devops/hello-app'
         DOCKER_TAG = '3.0'
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
 
     stages {
@@ -63,17 +64,28 @@ pipeline {
 
         stage('Kubernetes Deploy') {
             steps {
-                sh 'kubectl apply -f hello-app/k8s/deployment.yaml'
-                sh 'kubectl apply -f hello-app/k8s/service.yaml'
+                sh '''
+                    export KUBECONFIG=/var/lib/jenkins/.kube/config
+
+                    kubectl apply -f hello-app/k8s/deployment.yaml
+                    kubectl apply -f hello-app/k8s/service.yaml
+                '''
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                sh 'kubectl rollout status deployment/hello-app'
-                sh 'kubectl get pods'
-                sh 'kubectl get deployment hello-app'
-                sh 'kubectl get service hello-app-service'
+                sh '''
+                    export KUBECONFIG=/var/lib/jenkins/.kube/config
+
+                    kubectl rollout status deployment/hello-app
+
+                    kubectl get pods
+
+                    kubectl get deployment hello-app
+
+                    kubectl get service hello-app-service
+                '''
             }
         }
     }
@@ -85,13 +97,14 @@ pipeline {
             echo 'CI/CD PIPELINE COMPLETED SUCCESSFULLY!'
             echo 'Docker image pushed successfully.'
             echo 'Kubernetes deployment completed.'
+            echo 'Application deployment verified.'
             echo '=========================================='
         }
 
         failure {
             echo '=========================================='
             echo 'CI/CD PIPELINE FAILED'
-            echo 'Check the Jenkins Console Output.'
+            echo 'Check the Jenkins console output.'
             echo '=========================================='
         }
     }
